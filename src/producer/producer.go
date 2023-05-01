@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -8,8 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fillipdots/kafka-go-experiment/util"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/fillipdots/kafka-go-experiment/util"
+	"github.com/fillipdots/kafka-go-experiment/util/event"
 )
 
 func main() {
@@ -32,8 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Go-routine to handle message delivery reports and
-	// possibly other event types (errors, stats, etc)
+	// Go-routine to handle message delivery reports
 	go func() {
 		for e := range producer.Events() {
 			switch ev := e.(type) {
@@ -41,15 +42,15 @@ func main() {
 				if ev.TopicPartition.Error != nil {
 					fmt.Printf("Failed to deliver message: %v\n", ev.TopicPartition)
 				} else {
-					fmt.Printf("Produced event to topic %s: key = %-10s value = %s\n",
-						*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
+					var sentEvent event.Event
+					json.Unmarshal(ev.Value, &sentEvent)
+					uuidToColour := util.SimpleUuidToColourInt(sentEvent.Id.String())
+
+					fmt.Printf("Produced event: key = \x1b[%dm%-10s\x1b[0m value = %s\n", uuidToColour, string(ev.Key), string(ev.Value))
 				}
 			}
 		}
 	}()
-
-	users := [...]string{"eabara", "jsmith", "sgarcia", "jbernard", "htanaka", "awalther"}
-	items := [...]string{"book", "alarm clock", "t-shirts", "gift card", "batteries"}
 
 	// Set up a channel for handling Ctrl-C, etc
 	sigChannel := make(chan os.Signal, 1)
@@ -63,12 +64,13 @@ func main() {
 			fmt.Printf("Caught signal %v: terminating\n", sig)
 			run = false
 		default:
-			key := users[rand.Intn(len(users))]
-			data := items[rand.Intn(len(items))]
+			randomEvent := event.NewRandom()
+			eventJson, _ := json.Marshal(randomEvent)
+
 			producer.Produce(&kafka.Message{
 				TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-				Key:            []byte(key),
-				Value:          []byte(data),
+				Key:            []byte(randomEvent.Id.String()),
+				Value:          []byte(eventJson),
 			}, nil)
 
 			time.Sleep(time.Duration(rand.Intn(3)) * time.Second)

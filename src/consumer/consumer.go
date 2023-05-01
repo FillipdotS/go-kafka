@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
 	"github.com/fillipdots/kafka-go-experiment/util"
+	"github.com/fillipdots/kafka-go-experiment/util/event"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -56,12 +59,19 @@ func main() {
 			run = false
 		default:
 			ev, err := consumer.ReadMessage(100 * time.Millisecond)
+
 			if err != nil {
 				// Errors are informational and automatically handled by the consumer
+				// Error can also just be a timeout, i.e. not a problem
 				continue
 			}
-			fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
-				*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
+
+			var receivedEvent event.Event
+			json.Unmarshal(ev.Value, &receivedEvent)
+
+			uuidToColour := util.SimpleUuidToColourInt(receivedEvent.Id.String())
+
+			fmt.Printf("Consumed event: key = \x1b[%dm%-8s\x1b[0m buyer = %-10s item = %-12s price = %-5d\n", uuidToColour, string(ev.Key), receivedEvent.Buyer, receivedEvent.Item, receivedEvent.Price)
 		}
 	}
 
