@@ -20,7 +20,7 @@ There are three modules in this project:
 2. `consumer` - receives events from Kafka
 3. `util` - contains shared utility code
 
-Each one has a seperate `Dockerfile`. The expected way to run them is with `docker-compose`, as it contains the build context.
+Each one has a seperate `Dockerfile`, except for `util`. The expected way to run them is with `docker-compose`, as it contains the build context.
 
 ## Development
 
