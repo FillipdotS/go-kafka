@@ -1,10 +1,16 @@
 # Kafka Go Experiment
 
-A small project to play around with Kafka and Go, consisting of a producer module and a consumer module. Everything is dockerized and can be run with docker-compose.
+A small project to play around with Kafka and Go, consisting of a producer module and a consumer module. Everything is dockerized and can be run with `docker-compose`.
+
+The events being sent into Kafka are fake "purchase" events, they include a unique uuid, buyer's name, item and price. They are serialized to json before being sent.
 
 ## Showcase
 
-Todo
+Below are the logs of two docker containers, showing the producer sending events and the consumer receiving them.
+
+**Top** - Consumer, **Bottom** - Producer
+
+https://user-images.githubusercontent.com/31768805/235538617-2ce80cc8-cf59-4f44-976c-3cc4ef5acc32.mp4
 
 ## Development
 
