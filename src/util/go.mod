@@ -1,4 +1,4 @@
-module github.com/fillipdots/kafka-experiment/util
+module github.com/fillipdots/kafka-go-experiment/util
 
 go 1.18
 

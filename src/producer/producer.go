@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	
-	"github.com/fillipdots/kafka-experiment/util"
+
+	"github.com/fillipdots/kafka-go-experiment/util"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
